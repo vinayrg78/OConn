@@ -6,6 +6,9 @@
     <packaging>jar</packaging>
     <version>1.0-SNAPSHOT</version>
     <name>OPOWER Connection Pool Homework</name>
+    <properties>
+      <java.version>1.6</java.version>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
