@@ -15,7 +15,7 @@ OConnection is a wrapper class which wraps the java.sql.Connection object in it.
 certain diagnostic information about the connections that are given out. One proactive feature is the ability of the connection to return
 itself to the pool is close is invoked on it. This is done to prevent closed connections from impacting pool capacity.
 
-Junit and EasyMock Test cases have been included. Please not that running the test (i.e: mvn test) takes  upto 20 seconds.
+Junit and EasyMock Test cases have been included. Please note that running the test (i.e: mvn test) can take upto 30 seconds.
 This is primarily due to the nature of certain tests that cause the thread to sleep to test events like abandonment.
 Logs are written to the ConnectionPool.log file which will be created under the OConn folder.
 
