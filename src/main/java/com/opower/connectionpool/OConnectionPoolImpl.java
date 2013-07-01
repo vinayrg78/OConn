@@ -15,6 +15,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import javax.management.RuntimeErrorException;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -78,14 +80,15 @@ public class OConnectionPoolImpl implements ConnectionPool {
 	}
 	
 	/* Creates the physical connection and wraps it in the custom oConnection wrapper and returns it. */
-	private Connection createConnection(){
+	private Connection createConnection() {
 		OConnection oConnection  = null;
+		Connection connection;
 		try {
-			Connection connection = DriverManager.getConnection(ds._url, ds._username, ds._password);
-			oConnection = new OConnection(connection, this);
+			connection = DriverManager.getConnection(ds._url, ds._username, ds._password);
 		} catch (SQLException e) {
-			log.error("Unable to create connection. " + e.getMessage());
+			throw new RuntimeException("Unable to establish connections to the database. Is the datasource.properties properfly formed? ");
 		}
+		oConnection = new OConnection(connection, this);
 		return oConnection;
 	}
 
@@ -198,7 +201,7 @@ public class OConnectionPoolImpl implements ConnectionPool {
 	}
 	
 	/* populates the pool with new connections.  */
-	protected void initializePool(){
+	protected void initializePool() {
 		for(int i = 0; i < ds._poolSize; i++){
 			Connection connection  = createConnection();
 			_connectionList.add(connection);
