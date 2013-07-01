@@ -23,6 +23,7 @@ Logs are written to the ConnectionPool.log file which will be created under the 
 
 How to configure:
 The datasource.properties file under src/main/resources contains all the properties needed to configure the ConnectionPool.
+The program expects this file to be in the class path.
 The poolsize is the maximum number of connections the pool is allowed to create.
 The maxIdleTimeInSeconds is the maximum amount of time for which a borrowed connection can remain idle before it is considered abandoned.
 Both these properties are optional and will default to 5.
