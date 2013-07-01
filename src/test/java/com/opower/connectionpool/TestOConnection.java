@@ -29,6 +29,8 @@ public class TestOConnection extends TestCase {
 		oConnection = new OConnection(_connectionMock, _connectionPoolMock);
 	}
 	
+	
+	/* Ensures that the pool's resetAbandonedCheckTimer is invoked when close is called on the OConnection instance. */
 	@Test
 	public void testClose() {
 		try {
@@ -52,6 +54,8 @@ public class TestOConnection extends TestCase {
 		}
 	}
 	
+	/* Ensures that the pool's resetAbandonedCheckTimer is invoked and the physical connection's
+	 * isClosed() is called when isClosed is invoked on the OConnection instance. */
 	@Test
 	public void testIsClosed() {
 		try {
