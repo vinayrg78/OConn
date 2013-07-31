@@ -25,10 +25,10 @@ public abstract class AbstractTestOConnectionPoolImpl extends TestCase{
 	@Before
 	public void setUp() throws Exception {
 		dataSource = DataSource.getInstance();
-		connectionPoolImpl = (OConnectionPoolImpl)OConnectionPoolImpl.getInstance();
+		connectionPoolImpl = new OConnectionPoolImpl();
 		
-		LITTLE_MORE_THAN_MAX_IDLE_TIME = dataSource._maxIdleTimeInSeconds * 1000 + 1000;
-		LITTLE_LESS_THAN_MAX_IDLE_TIME = dataSource._maxIdleTimeInSeconds * 1000 - 1000;
+		LITTLE_MORE_THAN_MAX_IDLE_TIME = dataSource.maxIdleTimeInSeconds * 1000 + 1000;
+		LITTLE_LESS_THAN_MAX_IDLE_TIME = dataSource.maxIdleTimeInSeconds * 1000 - 1000;
 	}
 
 	@After
@@ -37,8 +37,8 @@ public abstract class AbstractTestOConnectionPoolImpl extends TestCase{
 	}
 	
 	protected Connection[] getAllConnections() throws SQLException {
-		Connection[] connArr = new Connection[dataSource._poolSize];
-		for(int i = 0; i < dataSource._poolSize; i++){
+		Connection[] connArr = new Connection[dataSource.poolSize];
+		for(int i = 0; i < dataSource.poolSize; i++){
 			connArr[i] = connectionPoolImpl.getConnection();
 			assertNotNull(connArr[i]);
 		}
@@ -49,6 +49,6 @@ public abstract class AbstractTestOConnectionPoolImpl extends TestCase{
 	/* recycles all the connections in the pool. */
 	protected void recyclePool(){
 		connectionPoolImpl.destroyPool();
-		connectionPoolImpl.initializePool();
+		//connectionPoolImpl.initializePool();
 	}
 }

@@ -15,12 +15,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import javax.management.RuntimeErrorException;
-
 import org.apache.log4j.Logger;
 
 /**
- * A singleton ConnectionPool that maintains a pool of OConnections. (Uses a LinkedList data structure).
+ * A ConnectionPool that maintains a pool of OConnections. (Uses a LinkedList data structure).
  * It eagerly initializes the connections on instantiation so first time callers don't have to wait.
  * Uses a DataSource bean to determine the user settings. 
  * 
@@ -33,11 +31,8 @@ import org.apache.log4j.Logger;
  */
 public class OConnectionPoolImpl implements ConnectionPool {
 	
-	/* The One and only instance of the connection pool. */
-	private static final ConnectionPool connectionPoolInstance  = new OConnectionPoolImpl();
-	
 	/* The pool of connections.*/
-	private List<Connection> _connectionList;
+	private List<Connection> connectionList;
 	
 	/* Map of releaseOnAbandonmentTaskHandle for every borrowed connection. */
 	private Map<Connection, ScheduledFuture> releaseOnAbandonmentTaskMap;
@@ -50,16 +45,12 @@ public class OConnectionPoolImpl implements ConnectionPool {
 
 	private Logger log = Logger.getLogger(OConnectionPoolImpl.class.getName());
 	
-	public static ConnectionPool getInstance(){
-		return OConnectionPoolImpl.connectionPoolInstance;
-	}
-	
 	/* Constructor eagerly initializes the OConnection Pool. 
 	 * The list and map are synchronized in order to prevent multiple threads from simultaneously invoking getConnection
 	 * and corrupting the pool. */
-	private OConnectionPoolImpl() {
+	public OConnectionPoolImpl() {
 		ds = DataSource.getInstance();
-		_connectionList = Collections.synchronizedList(new LinkedList<Connection>());
+		connectionList = Collections.synchronizedList(new LinkedList<Connection>());
 		registerDriver();
 		initializePool();
 		initializeAbandonReleaseResources();
@@ -67,12 +58,12 @@ public class OConnectionPoolImpl implements ConnectionPool {
 	
 	private void initializeAbandonReleaseResources() {
 		releaseOnAbandonmentTaskMap = Collections.synchronizedMap(new HashMap<Connection, ScheduledFuture>());
-	    scheduler =  Executors.newScheduledThreadPool(ds._poolSize);
+	    scheduler =  Executors.newScheduledThreadPool(ds.poolSize);
 	}
 
 	private void registerDriver(){
 		try {
-		   Class.forName(ds._driver);
+		   Class.forName(ds.driver);
 		}
 		catch(ClassNotFoundException ex) {
 		   log.error("Unable to load driver class!");
@@ -84,9 +75,9 @@ public class OConnectionPoolImpl implements ConnectionPool {
 		OConnection oConnection  = null;
 		Connection connection;
 		try {
-			connection = DriverManager.getConnection(ds._url, ds._username, ds._password);
+			connection = DriverManager.getConnection(ds.url, ds.username, ds.password);
 		} catch (SQLException e) {
-			throw new RuntimeException("Unable to establish connections to the database. Is the datasource.properties properfly formed? ");
+			throw new RuntimeException("Unable to establish connections to the database. Is the datasource.properties properly formed? ");
 		}
 		oConnection = new OConnection(connection, this);
 		return oConnection;
@@ -97,10 +88,10 @@ public class OConnectionPoolImpl implements ConnectionPool {
 	 * Throws exception if the pool is empty.*/
 	@Override
 	public Connection getConnection() throws SQLException {
-		if(_connectionList.isEmpty()){
+		if(connectionList.isEmpty()){
 			throw new IllegalStateException("Connection Pool Currently Empty.");
 		} 
-		Connection connectionToReturn = _connectionList.remove(0);
+		Connection connectionToReturn = connectionList.remove(0);
         addNewReleaseOnAbandonmentHandleToMap(connectionToReturn);
         
 		return connectionToReturn;
@@ -109,9 +100,9 @@ public class OConnectionPoolImpl implements ConnectionPool {
 	/* Schedules a releaseOnAbandonmentTask and Inserts the corresponding releaseOnAbandonmentHandle into the map. 
 	 * releaseOnAbandonmentHandle is used to reset the  task when any activity is detected on the borrowed connection. */
 	private void addNewReleaseOnAbandonmentHandleToMap(Connection connectionBeingScheduled) {
-		Callable<?> releaseOnAbandonmentTask = getReleaseOnAbandonmentTask(connectionBeingScheduled);
+		Callable<?> releaseOnAbandonmentTask = getReleaseOnAbandonmentTask(connectionBeingScheduled, this);
 		final ScheduledFuture<?> releaseOnAbandonmentHandle =
-	            scheduler.schedule(releaseOnAbandonmentTask, ds._maxIdleTimeInSeconds, TimeUnit.SECONDS);
+	            scheduler.schedule(releaseOnAbandonmentTask, ds.maxIdleTimeInSeconds, TimeUnit.SECONDS);
 		releaseOnAbandonmentTaskMap.put(connectionBeingScheduled, releaseOnAbandonmentHandle);
 		return;
 	}
@@ -119,13 +110,13 @@ public class OConnectionPoolImpl implements ConnectionPool {
 	/* Utility method that returns the task being scheduled by the scheduler. 
 	 * This task is executed when a connection is deemed as abandoned. The task essentially
 	 * removes the handler from the map and reinserts the abandoned connection back into the pool. */
-	private Callable<?> getReleaseOnAbandonmentTask(final Connection connectionToReturn){
+	private Callable<?> getReleaseOnAbandonmentTask(final Connection connectionToReturn, final ConnectionPool connectionPoolInstance){
 		return new Callable<Object>() {
             public Object call() throws SQLException {
             	releaseOnAbandonmentTaskMap.remove(connectionToReturn);
             	OConnection oConnection = new OConnection(((OConnection)connectionToReturn)._connection, connectionPoolInstance);
             	((OConnection)connectionToReturn)._connection = null;
-            	_connectionList.add(oConnection);
+            	connectionList.add(oConnection);
             	return null;
             }
 		};
@@ -144,7 +135,7 @@ public class OConnectionPoolImpl implements ConnectionPool {
 	@Override
 	public synchronized void releaseConnection(Connection connection) throws SQLException, IllegalStateException {
 		Connection oConnectionToBeInserted = null;
-		if(connection != null && _connectionList.size() < ds._poolSize){
+		if(connection != null && connectionList.size() < ds.poolSize){
 			if(connection instanceof OConnection){
 				OConnection oConnectionToBeReleased = (OConnection) connection;
 				if(oConnectionToBeReleased._connection == null){
@@ -163,7 +154,7 @@ public class OConnectionPoolImpl implements ConnectionPool {
 			}
 			if(oConnectionToBeInserted != null){
 				removeReleaseOnAbandonmentHandleFromMap(connection);
-				_connectionList.add(oConnectionToBeInserted);
+				connectionList.add(oConnectionToBeInserted);
 			}
 		}
 	}
@@ -179,38 +170,38 @@ public class OConnectionPoolImpl implements ConnectionPool {
 
 	/* Invoked by the connection wrapper when any method on it is called by the client.
 	 * This ensures that the timer is reset and active connections dont get considered as abandoned. */
-	protected void resetAbandonedCheckTimer(OConnection oConnection) {
+	void resetAbandonedCheckTimer(OConnection oConnection) {
 		removeReleaseOnAbandonmentHandleFromMap(oConnection);
 		addNewReleaseOnAbandonmentHandleToMap(oConnection);
 	}
 	
 	/* destroys the pool by getting rid of all the connections. */
-	protected void destroyPool(){
+	void destroyPool(){
 		try {
-			synchronized(_connectionList){
-				Iterator<Connection> it = _connectionList.iterator();
+			synchronized(connectionList){
+				Iterator<Connection> it = connectionList.iterator();
 				while(it.hasNext()){
 					Connection connection = it.next();
 					((OConnection)connection)._connection.close();
 				}
 			}
-			_connectionList.clear();
+			connectionList.clear();
 		} catch (SQLException e) {
 			log.error(e.getMessage());
 		}
 	}
 	
 	/* populates the pool with new connections.  */
-	protected void initializePool() {
-		for(int i = 0; i < ds._poolSize; i++){
+	void initializePool() {
+		for(int i = 0; i < ds.poolSize; i++){
 			Connection connection  = createConnection();
-			_connectionList.add(connection);
+			connectionList.add(connection);
 		}
 	}
 	
 	/* returns the number of available connections in the pool. */
-	protected int getNumberOfAvailableConnections(){
-		return _connectionList.size();
+	int getNumberOfAvailableConnections(){
+		return connectionList.size();
 	}
 	
 	/* In case the garbage collector picks up this instance, this gives it a fighting chance of cleaning up after itself. */

@@ -17,16 +17,16 @@ import org.junit.Test;
  */
 public class TestOConnection extends TestCase {
 
-	private Connection _connectionMock;
-	private OConnectionPoolImpl _connectionPoolMock;
+	private Connection connectionMock;
+	private OConnectionPoolImpl connectionPoolMock;
 	private Connection oConnection;
 	
 	
 	@Before
 	public void setUp() throws Exception {
-		_connectionMock = EasyMock.createStrictMock(Connection.class);
-		_connectionPoolMock = EasyMock.createStrictMock(OConnectionPoolImpl.class);
-		oConnection = new OConnection(_connectionMock, _connectionPoolMock);
+		connectionMock = EasyMock.createStrictMock(Connection.class);
+		connectionPoolMock = EasyMock.createStrictMock(OConnectionPoolImpl.class);
+		oConnection = new OConnection(connectionMock, connectionPoolMock);
 	}
 	
 	
@@ -34,21 +34,21 @@ public class TestOConnection extends TestCase {
 	@Test
 	public void testClose() {
 		try {
-			((OConnectionPoolImpl)_connectionPoolMock).resetAbandonedCheckTimer((OConnection) oConnection);
+			((OConnectionPoolImpl)connectionPoolMock).resetAbandonedCheckTimer((OConnection) oConnection);
 			EasyMock.expectLastCall();
 			
-			_connectionMock.close();
+			connectionMock.close();
 			EasyMock.expectLastCall();
 
-			_connectionPoolMock.releaseConnection((OConnection) oConnection);
+			connectionPoolMock.releaseConnection((OConnection) oConnection);
 			EasyMock.expectLastCall();
 			
-			EasyMock.replay(_connectionMock);
-			EasyMock.replay(_connectionPoolMock);
+			EasyMock.replay(connectionMock);
+			EasyMock.replay(connectionPoolMock);
 			
 	        oConnection.close();
-	        EasyMock.verify(_connectionMock);
-	        EasyMock.verify(_connectionPoolMock);
+	        EasyMock.verify(connectionMock);
+	        EasyMock.verify(connectionPoolMock);
 		} catch (SQLException e) {
 			fail(e.getMessage());
 		}
@@ -59,18 +59,18 @@ public class TestOConnection extends TestCase {
 	@Test
 	public void testIsClosed() {
 		try {
-			((OConnectionPoolImpl)_connectionPoolMock).resetAbandonedCheckTimer((OConnection) oConnection);
+			((OConnectionPoolImpl)connectionPoolMock).resetAbandonedCheckTimer((OConnection) oConnection);
 			EasyMock.expectLastCall();
 			
-			EasyMock.expect(_connectionMock.isClosed()).andReturn(false);
+			EasyMock.expect(connectionMock.isClosed()).andReturn(false);
 			EasyMock.expectLastCall();
 
-			EasyMock.replay(_connectionMock);
-			EasyMock.replay(_connectionPoolMock);
+			EasyMock.replay(connectionMock);
+			EasyMock.replay(connectionPoolMock);
 			
 	        oConnection.isClosed();
-	        EasyMock.verify(_connectionMock);
-	        EasyMock.verify(_connectionPoolMock);
+	        EasyMock.verify(connectionMock);
+	        EasyMock.verify(connectionPoolMock);
 		} catch (SQLException e) {
 			fail(e.getMessage());
 		}	

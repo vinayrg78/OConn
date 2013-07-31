@@ -19,12 +19,12 @@ class DataSource {
 	private static final String DATASOURCE_POOLSIZE = "datasource.poolsize";
 	private static final String DATASOURCE_MAX_IDLE_TIME_IN_SECONDS = "datasource.maxIdleTimeInSeconds";
 	
-	protected String _driver;
-	protected String _url;
-	protected String _username;
-	protected String _password;
-	protected int _poolSize;
-	protected int _maxIdleTimeInSeconds;
+	protected String driver;
+	protected String url;
+	protected String username;
+	protected String password;
+	protected int poolSize;
+	protected int maxIdleTimeInSeconds;
 	
 	private Logger log = Logger.getLogger(DataSource.class.getName());
 	
@@ -40,12 +40,12 @@ class DataSource {
     	try {
     		prop.load(DataSource.class.getClassLoader().getResourceAsStream("datasource.properties"));
  
-    		_driver = prop.getProperty(DATASOURCE_DRIVER);
-    		_url = prop.getProperty(DATASOURCE_URL);
-    		_username = prop.getProperty(DATASOURCE_USERNAME);
-    		_password = prop.getProperty(DATASOURCE_PASSWORD);
-    		_poolSize = Integer.parseInt(prop.getProperty(DATASOURCE_POOLSIZE, "5").trim());
-    		_maxIdleTimeInSeconds = Integer.parseInt(prop.getProperty(DATASOURCE_MAX_IDLE_TIME_IN_SECONDS, "5").trim());
+    		driver = prop.getProperty(DATASOURCE_DRIVER);
+    		url = prop.getProperty(DATASOURCE_URL);
+    		username = prop.getProperty(DATASOURCE_USERNAME);
+    		password = prop.getProperty(DATASOURCE_PASSWORD);
+    		poolSize = Integer.parseInt(prop.getProperty(DATASOURCE_POOLSIZE, "5").trim());
+    		maxIdleTimeInSeconds = Integer.parseInt(prop.getProperty(DATASOURCE_MAX_IDLE_TIME_IN_SECONDS, "5").trim());
     	} catch (IOException ex) {
     		log.error("datasource.properties could not be loaded. " + ex.getMessage());
         }

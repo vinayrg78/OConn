@@ -13,12 +13,6 @@ import org.junit.Test;
  */
 public class TestOConnectionPoolImpl extends AbstractTestOConnectionPoolImpl{
 
-	/* Ensures multiple invocations retrieve the same singleton instance. */
-	@Test
-	public void testGetInstance() {
-		assertEquals(OConnectionPoolImpl.getInstance(), connectionPoolImpl);
-	}
-
 	/* Ensures proper working of the getConnection flow. */
 	@Test
 	public void testGetConnection() {
@@ -36,7 +30,7 @@ public class TestOConnectionPoolImpl extends AbstractTestOConnectionPoolImpl{
 	public void testGetConnectionMax() {
 		try {
 			Connection[] connArr = getAllConnections();
-			assertEquals(connArr.length, dataSource._poolSize);
+			assertEquals(connArr.length, dataSource.poolSize);
 			connectionPoolImpl.getConnection();
 			fail("Should have thrown a IllegalStateException");
 		} catch (SQLException e) {
@@ -73,7 +67,7 @@ public class TestOConnectionPoolImpl extends AbstractTestOConnectionPoolImpl{
 	public void testCloseConnection(){
 		try {
 			Connection[] connArr = getAllConnections();
-			for(int i = 0; i < dataSource._poolSize; i++){
+			for(int i = 0; i < dataSource.poolSize; i++){
 				connArr[i].close();
 				assertEquals(connArr[i].isClosed(), true);
 			}
@@ -127,7 +121,7 @@ public class TestOConnectionPoolImpl extends AbstractTestOConnectionPoolImpl{
 			
 			//Ensure poolsize.
 			Connection[] conArr = getAllConnections();
-			assertEquals(conArr.length, dataSource._poolSize);
+			assertEquals(conArr.length, dataSource.poolSize);
 		} catch (SQLException e) {
 			fail(e.getMessage());
 		}
@@ -252,7 +246,7 @@ public class TestOConnectionPoolImpl extends AbstractTestOConnectionPoolImpl{
 				t.start();
 			}
 			Thread.sleep(18000);
-			assertTrue(((OConnectionPoolImpl)connectionPoolImpl).getNumberOfAvailableConnections() <= dataSource._poolSize &&
+			assertTrue(((OConnectionPoolImpl)connectionPoolImpl).getNumberOfAvailableConnections() <= dataSource.poolSize &&
 					((OConnectionPoolImpl)connectionPoolImpl).getNumberOfAvailableConnections() >= 0);
 		} catch (InterruptedException e1) {
 			fail("Unexpected Error: " + e1.getMessage());
@@ -262,19 +256,19 @@ public class TestOConnectionPoolImpl extends AbstractTestOConnectionPoolImpl{
 	class PoolUser implements Runnable {
 		public void run(){
 			try {
-				assertTrue(((OConnectionPoolImpl)connectionPoolImpl).getNumberOfAvailableConnections() <= dataSource._poolSize &&
+				assertTrue(((OConnectionPoolImpl)connectionPoolImpl).getNumberOfAvailableConnections() <= dataSource.poolSize &&
 						((OConnectionPoolImpl)connectionPoolImpl).getNumberOfAvailableConnections() >= 0);
 				Connection conn = connectionPoolImpl.getConnection();
 				conn.isClosed();
 				//sleep between 1 to 5 seconds.
 				int randomNum = new Random().nextInt(5) + 1;
 				Thread.sleep(randomNum * 1000);
-				assertTrue(((OConnectionPoolImpl)connectionPoolImpl).getNumberOfAvailableConnections() <= dataSource._poolSize &&
+				assertTrue(((OConnectionPoolImpl)connectionPoolImpl).getNumberOfAvailableConnections() <= dataSource.poolSize &&
 						((OConnectionPoolImpl)connectionPoolImpl).getNumberOfAvailableConnections() >= 0);
 				conn.getAutoCommit();
 				connectionPoolImpl.releaseConnection(conn);
 				//conn.close();
-				assertTrue(((OConnectionPoolImpl)connectionPoolImpl).getNumberOfAvailableConnections() <= dataSource._poolSize &&
+				assertTrue(((OConnectionPoolImpl)connectionPoolImpl).getNumberOfAvailableConnections() <= dataSource.poolSize &&
 						((OConnectionPoolImpl)connectionPoolImpl).getNumberOfAvailableConnections() >= 0);
 			} catch (SQLException e) {
 				fail("Unexpected error: "  + Thread.currentThread().getName() + e.getMessage());

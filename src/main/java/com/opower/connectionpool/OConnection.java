@@ -18,10 +18,8 @@ import java.sql.Struct;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
-
 /**
- * Wrapper class for Connection Object. (Package scoped). Primarily "forwards" the method invocations to the
+ * Wrapper class for Connection Object. Primarily "forwards" the method invocations to the
  * wrapped physical connection. 
  * 
  * The purpose of using the wrapper is to ensure the pool has control over the lifecycle of the connections.
@@ -29,15 +27,13 @@ import org.apache.log4j.Logger;
  * 
  * @author VinayG
  */
-class OConnection implements Connection {
+public class OConnection implements Connection {
 
 	//The physical connection wrapped by this instance
 	protected Connection _connection;
 	
 	//The pool to which this connection belongs.
 	private final ConnectionPool _connectionPool;
-	
-	private Logger log = Logger.getLogger(OConnection.class.getName());
 	
 	public OConnection(Connection connection, ConnectionPool connectionPool){
 		this._connection = connection;
