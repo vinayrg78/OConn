@@ -1,10 +1,9 @@
-
 PROJECT TITLE: OConn
 Author: Vinay Gangoli
 Date: 06-30-2013
 
 Overview: 
-This connection pool submission consists of a OConnectionPoolImpl class which implements the given ConnectionPool interface. It connects
+This connection pool implementation consists of a OConnectionPoolImpl class which implements the given ConnectionPool interface. It connects
 to the Postgres DB. The pool uses a LinkedList data structure to maintain the pool. It schedules a time delayed future task to reclaim the connection 
 if not utilized for the max idle time period. Every time the connection is utilized the timer is reset. This ensures that clients 
 who use their connections can continue to hold on to them.
@@ -41,8 +40,6 @@ $> mvn test
 
 Other notes: The Eclipse IDE (Java 6) was used to develop this software. In addition to the pre-existing dependencies easymockclassextension 
 (with it's dependencies) was added to facilitate the writing of certain mock tests.
-
-Thank you for reviewing this software.
 
 
 
